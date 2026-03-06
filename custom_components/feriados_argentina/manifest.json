@@ -1,0 +1,10 @@
+{
+  "domain": "feriados_argentina",
+  "name": "Holiday Days Argentina",
+  "version": "1.0.0",
+  "config_flow": true,
+  "documentation": "https://www.argentina.gob.ar/jefatura/feriados-nacionales",
+  "requirements": [],
+  "iot_class": "cloud_polling",
+  "codeowners": []
+}

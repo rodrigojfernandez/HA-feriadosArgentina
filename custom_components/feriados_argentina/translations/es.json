@@ -1,0 +1,28 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Feriados Argentina",
+        "description": "Configura qué días no laborables se consideran feriados.",
+        "data": {
+          "include_jewish": "Incluir días no laborables judíos (Pesaj, Rosh Hashaná, Iom Kipur)",
+          "include_islamic": "Incluir días no laborables islámicos (Ramadán, Fiesta del Sacrificio, Año Nuevo Islámico)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Feriados Argentina ya está configurado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de Feriados Argentina",
+        "data": {
+          "include_jewish": "Incluir días no laborables judíos (Pesaj, Rosh Hashaná, Iom Kipur)",
+          "include_islamic": "Incluir días no laborables islámicos (Ramadán, Fiesta del Sacrificio, Año Nuevo Islámico)"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Holiday Days Argentina",
+        "description": "Configure which non-working days are considered holidays.",
+        "data": {
+          "include_jewish": "Include Jewish non-working days (Pesach, Rosh Hashanah, Yom Kippur)",
+          "include_islamic": "Include Islamic non-working days (Ramadan, Eid al-Adha, Islamic New Year)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Holiday Days Argentina is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Holiday Days Argentina Options",
+        "data": {
+          "include_jewish": "Include Jewish non-working days (Pesach, Rosh Hashanah, Yom Kippur)",
+          "include_islamic": "Include Islamic non-working days (Ramadan, Eid al-Adha, Islamic New Year)"
+        }
+      }
+    }
+  }
+}
