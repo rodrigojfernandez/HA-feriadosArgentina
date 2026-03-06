@@ -15,14 +15,14 @@ Home Assistant integration that retrieves national holidays and non-working days
 
 | Entity | Description |
 |--------|-------------|
-| `binary_sensor.es_feriado_hoy` | `on` if today is a national holiday |
-| `binary_sensor.es_dia_no_laborable_hoy` | `on` if today is a non-working day |
+| `binary_sensor.is_holiday_today` | `on` if today is a national holiday |
+| `binary_sensor.is_non_working_day_today` | `on` if today is a non-working day |
 
 ### Sensors
 
 | Entity | Description |
 |--------|-------------|
-| `sensor.feriado_de_hoy` | Name of today's holiday/non-working day |
+| `sensor.today_s_holiday` | Name of today's holiday/non-working day |
 
 ## Attributes
 
@@ -68,7 +68,7 @@ automation:
         at: "07:00:00"
     condition:
       - condition: state
-        entity_id: binary_sensor.es_feriado_hoy
+        entity_id: binary_sensor.is_holiday_today
         state: "off"
     action:
       - service: media_player.play_media
@@ -80,8 +80,8 @@ automation:
 ```yaml
 type: markdown
 content: >
-  {% if is_state('binary_sensor.es_feriado_hoy', 'on') %}
-    Today is a holiday: {{ states('sensor.feriado_de_hoy') }}
+  {% if is_state('binary_sensor.is_holiday_today', 'on') %}
+    Today is a holiday: {{ states('sensor.today_s_holiday') }}
   {% else %}
     Today is not a holiday
   {% endif %}

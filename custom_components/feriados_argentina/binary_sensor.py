@@ -36,16 +36,16 @@ class _BaseArgentinaBinarySensor(CoordinatorEntity, BinarySensorEntity):
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, "feriados_argentina")},
-            "name": "Feriados Argentina",
+            "name": "Holiday Days Argentina",
             "manufacturer": "Argentina.gob.ar",
-            "model": "Feriados Nacionales",
+            "model": "National Holidays",
         }
 
 
 class EsFeriadoBinarySensor(_BaseArgentinaBinarySensor):
     """True when today is an official national holiday (feriado)."""
 
-    _attr_name = "Es feriado hoy"
+    _attr_name = "Is Holiday Today"
     _attr_unique_id = "feriados_argentina_es_feriado"
     _attr_icon = "mdi:calendar-star"
 
@@ -58,20 +58,20 @@ class EsFeriadoBinarySensor(_BaseArgentinaBinarySensor):
         feriados = self.coordinator.data.get("today_feriados", [])
         today = self.coordinator.data.get("today")
         attrs: dict = {
-            "año": today.year if today else None,
-            "fecha": today.isoformat() if today else None,
+            "year": today.year if today else None,
+            "date": today.isoformat() if today else None,
         }
         if feriados:
-            attrs["nombre"] = ", ".join(_unique([h["name"] for h in feriados]))
-            attrs["tipo"] = ", ".join(_unique([h["type"] for h in feriados]))
-            attrs["feriados"] = feriados
+            attrs["name"] = ", ".join(_unique([h["name"] for h in feriados]))
+            attrs["type"] = ", ".join(_unique([h["type"] for h in feriados]))
+            attrs["holidays"] = feriados
         return attrs
 
 
 class EsDiaNoLaborableBinarySensor(_BaseArgentinaBinarySensor):
     """True when today is a non-working day (día no laborable) per user's config."""
 
-    _attr_name = "Es día no laborable hoy"
+    _attr_name = "Is Non-Working Day Today"
     _attr_unique_id = "feriados_argentina_es_no_laborable"
     _attr_icon = "mdi:calendar-remove"
 
@@ -84,15 +84,15 @@ class EsDiaNoLaborableBinarySensor(_BaseArgentinaBinarySensor):
         no_labs = self.coordinator.data.get("today_no_laborables", [])
         today = self.coordinator.data.get("today")
         attrs: dict = {
-            "año": today.year if today else None,
-            "fecha": today.isoformat() if today else None,
-            "incluye_dias_judios": self.coordinator.include_jewish,
-            "incluye_dias_islamicos": self.coordinator.include_islamic,
+            "year": today.year if today else None,
+            "date": today.isoformat() if today else None,
+            "includes_jewish_days": self.coordinator.include_jewish,
+            "includes_islamic_days": self.coordinator.include_islamic,
         }
         if no_labs:
-            attrs["nombre"] = ", ".join(_unique([h["name"] for h in no_labs]))
-            attrs["categoria"] = ", ".join(_unique([h["category"] for h in no_labs]))
-            attrs["dias_no_laborables"] = no_labs
+            attrs["name"] = ", ".join(_unique([h["name"] for h in no_labs]))
+            attrs["category"] = ", ".join(_unique([h["category"] for h in no_labs]))
+            attrs["non_working_days"] = no_labs
         return attrs
 
 
