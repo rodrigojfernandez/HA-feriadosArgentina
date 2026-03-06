@@ -1,4 +1,5 @@
 """Config flow for Feriados Argentina."""
+
 from __future__ import annotations
 
 import voluptuous as vol

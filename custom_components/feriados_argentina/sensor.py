@@ -1,4 +1,5 @@
 """Sensors for Feriados Argentina."""
+
 from __future__ import annotations
 
 from homeassistant.components.sensor import SensorEntity
@@ -50,7 +51,6 @@ class FeriadoNombreSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict:
         today = self.coordinator.data.get("today")
-        today_holidays = self.coordinator.data.get("today_holidays", [])
         today_feriados = self.coordinator.data.get("today_feriados", [])
         today_no_labs = self.coordinator.data.get("today_no_laborables", [])
 
@@ -64,13 +64,10 @@ class FeriadoNombreSensor(CoordinatorEntity, SensorEntity):
         }
 
         if today_feriados:
-            attrs["feriados"] = [
-                {"nombre": h["name"], "tipo": h["type"]} for h in today_feriados
-            ]
+            attrs["feriados"] = [{"nombre": h["name"], "tipo": h["type"]} for h in today_feriados]
         if today_no_labs:
             attrs["dias_no_laborables"] = [
-                {"nombre": h["name"], "categoria": h["category"]}
-                for h in today_no_labs
+                {"nombre": h["name"], "categoria": h["category"]} for h in today_no_labs
             ]
 
         return attrs

@@ -1,4 +1,5 @@
 """Data coordinator for Feriados Argentina."""
+
 from __future__ import annotations
 
 import logging
@@ -11,9 +12,9 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .const import (
     BASE_URL,
+    DIA_NO_LABORABLE_TYPE,
     DOMAIN,
     FERIADO_TYPES,
-    DIA_NO_LABORABLE_TYPE,
     ISLAMIC_MARKER,
     JEWISH_MARKER,
 )
@@ -41,9 +42,7 @@ def _parse_holidays(html: str) -> dict[tuple[int, int], list[dict]]:
     """Parse all holidays from the HTML of the argentina.gob.ar page."""
     holidays: dict[tuple[int, int], list[dict]] = {}
 
-    for month_match in re.finditer(
-        r'id="feriados-(\d+)">(.*?)</ul>', html, re.DOTALL
-    ):
+    for month_match in re.finditer(r'id="feriados-(\d+)">(.*?)</ul>', html, re.DOTALL):
         month = int(month_match.group(1))
         ul_content = month_match.group(2)
 
@@ -121,15 +120,13 @@ class ArgentinaHolidaysCoordinator(DataUpdateCoordinator):
             url = BASE_URL.format(year=year)
             _LOGGER.info("Fetching holidays for %d from %s", year, url)
             try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(
-                        url, timeout=aiohttp.ClientTimeout(total=30)
-                    ) as resp:
-                        if resp.status != 200:
-                            raise UpdateFailed(
-                                f"HTTP {resp.status} while fetching holidays from {url}"
-                            )
-                        html = await resp.text()
+                async with (
+                    aiohttp.ClientSession() as session,
+                    session.get(url, timeout=aiohttp.ClientTimeout(total=30)) as resp,
+                ):
+                    if resp.status != 200:
+                        raise UpdateFailed(f"HTTP {resp.status} while fetching holidays from {url}")
+                    html = await resp.text()
             except aiohttp.ClientError as err:
                 raise UpdateFailed(f"Network error while fetching holidays: {err}") from err
 
@@ -165,7 +162,5 @@ class ArgentinaHolidaysCoordinator(DataUpdateCoordinator):
             "today_all": all_today,
             "today_holidays": today_visible,
             "today_feriados": [e for e in today_visible if e["category"] == "feriado"],
-            "today_no_laborables": [
-                e for e in today_visible if e["category"] != "feriado"
-            ],
+            "today_no_laborables": [e for e in today_visible if e["category"] != "feriado"],
         }

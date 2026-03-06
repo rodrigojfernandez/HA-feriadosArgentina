@@ -1,4 +1,5 @@
 """Binary sensors for Feriados Argentina."""
+
 from __future__ import annotations
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -61,12 +62,8 @@ class EsFeriadoBinarySensor(_BaseArgentinaBinarySensor):
             "fecha": today.isoformat() if today else None,
         }
         if feriados:
-            attrs["nombre"] = ", ".join(
-                _unique([h["name"] for h in feriados])
-            )
-            attrs["tipo"] = ", ".join(
-                _unique([h["type"] for h in feriados])
-            )
+            attrs["nombre"] = ", ".join(_unique([h["name"] for h in feriados]))
+            attrs["tipo"] = ", ".join(_unique([h["type"] for h in feriados]))
             attrs["feriados"] = feriados
         return attrs
 
@@ -93,12 +90,8 @@ class EsDiaNoLaborableBinarySensor(_BaseArgentinaBinarySensor):
             "incluye_dias_islamicos": self.coordinator.include_islamic,
         }
         if no_labs:
-            attrs["nombre"] = ", ".join(
-                _unique([h["name"] for h in no_labs])
-            )
-            attrs["categoria"] = ", ".join(
-                _unique([h["category"] for h in no_labs])
-            )
+            attrs["nombre"] = ", ".join(_unique([h["name"] for h in no_labs]))
+            attrs["categoria"] = ", ".join(_unique([h["category"] for h in no_labs]))
             attrs["dias_no_laborables"] = no_labs
         return attrs
 

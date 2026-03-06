@@ -1,0 +1,71 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install homeassistant ruff
+
+      - name: Ruff lint
+        run: ruff check custom_components/
+
+      - name: Ruff format check
+        run: ruff format --check custom_components/
+
+      - name: Validate manifest.json
+        run: |
+          python -c "
+          import json
+          with open('custom_components/feriados_argentina/manifest.json') as f:
+              manifest = json.load(f)
+          required = ['domain', 'name', 'version', 'config_flow', 'documentation', 'iot_class', 'codeowners']
+          for key in required:
+              assert key in manifest, f'Missing required key: {key}'
+          print('manifest.json is valid')
+          "
+
+      - name: Validate hacs.json
+        run: |
+          python -c "
+          import json
+          with open('hacs.json') as f:
+              hacs = json.load(f)
+          assert 'name' in hacs, 'Missing name in hacs.json'
+          print('hacs.json is valid')
+          "
+
+      - name: Check integration loads
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          from custom_components.feriados_argentina import const
+          print(f'Domain: {const.DOMAIN}')
+          print('Integration module loads successfully')
+          "
+
+  hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: HACS Validation
+        uses: hacs/action@main
+        with:
+          category: integration
