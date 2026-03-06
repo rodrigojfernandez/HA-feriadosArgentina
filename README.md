@@ -7,7 +7,7 @@ Home Assistant integration that retrieves national holidays and non-working days
 - Detects if today is a **national holiday** (fixed, movable, or bridge day)
 - Detects if today is a **non-working day** (optional religious days)
 - Optional support for **Jewish** and **Islamic** non-working days
-- Automatic updates from [argentina.gob.ar](https://www.argentina.gob.ar/jefatura/feriados-nacionales)
+- Automatic updates from [argentina.gob.ar](https://www.argentina.gob.ar/jefatura/feriados-nacionales-2026) (year is dynamic)
 
 ## Entities
 
@@ -90,7 +90,7 @@ content: >
 ## Data Source
 
 Data is retrieved from the official Argentine government website:
-https://www.argentina.gob.ar/jefatura/feriados-nacionales
+https://www.argentina.gob.ar/jefatura/feriados-nacionales-{year}
 
 The integration queries this page automatically and updates the data at the beginning of each month.
 
