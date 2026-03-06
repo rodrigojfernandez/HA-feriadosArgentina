@@ -39,14 +39,11 @@ class FeriadosArgentinaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return FeriadosArgentinaOptionsFlow(config_entry)
+        return FeriadosArgentinaOptionsFlow()
 
 
 class FeriadosArgentinaOptionsFlow(config_entries.OptionsFlow):
     """Options flow to change Jewish/Islamic preferences after setup."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         current = self.config_entry.options or self.config_entry.data
