@@ -11,6 +11,15 @@ from .coordinator import ArgentinaHolidaysCoordinator
 PLATFORMS = ["binary_sensor", "sensor"]
 
 
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate old entry to new version."""
+    if config_entry.version == 1:
+        # v1 had include_jewish and include_islamic options, v2 doesn't need them
+        new_data = {}
+        hass.config_entries.async_update_entry(config_entry, data=new_data, version=2)
+    return True
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Feriados Argentina from a config entry."""
     coordinator = ArgentinaHolidaysCoordinator(hass)
