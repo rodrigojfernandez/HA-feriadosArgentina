@@ -1,13 +1,12 @@
 # Holiday Days Argentina
 
-Home Assistant integration that retrieves national holidays and non-working days in Argentina from the official government website.
+Home Assistant integration that retrieves national holidays and non-working days in Argentina from the ArgentinaDatos API.
 
 ## Features
 
-- Detects if today is a **national holiday** (fixed, movable, or bridge day)
-- Detects if today is a **non-working day** (optional religious days)
-- Optional support for **Jewish** and **Islamic** non-working days
-- Automatic updates from [argentina.gob.ar](https://www.argentina.gob.ar/jefatura/feriados-nacionales-2026) (year is dynamic)
+- Detects if today is a **national holiday** (fixed or movable holidays)
+- Detects if today is a **non-working day** (bridge days / tourist days)
+- Automatic updates from [ArgentinaDatos API](https://api.argentinadatos.com)
 
 ## Entities
 
@@ -15,8 +14,8 @@ Home Assistant integration that retrieves national holidays and non-working days
 
 | Entity | Description |
 |--------|-------------|
-| `binary_sensor.is_holiday_today` | `on` if today is a national holiday |
-| `binary_sensor.is_non_working_day_today` | `on` if today is a non-working day |
+| `binary_sensor.is_holiday_today` | `on` if today is a national holiday (fixed/movable) |
+| `binary_sensor.is_non_working_day_today` | `on` if today is a non-working bridge day |
 
 ### Sensors
 
@@ -30,7 +29,7 @@ Sensors include additional attributes such as:
 
 - `year`, `date`
 - `is_holiday`, `is_non_working_day`
-- `name`, `type`, `category`
+- `name`, `type`
 - Detailed list of `holidays` and `non_working_days`
 
 ## Installation
@@ -50,11 +49,7 @@ Sensors include additional attributes such as:
 
 1. Go to **Settings > Devices & Services > Add Integration**
 2. Search for "Holiday Days Argentina"
-3. Configure options:
-   - **Include Jewish days**: Include non-working days for the Jewish community
-   - **Include Islamic days**: Include non-working days for the Islamic community
-
-Options can be modified later from the integration settings.
+3. Click "Submit" (no configuration options required)
 
 ## Usage Examples
 
@@ -70,6 +65,9 @@ automation:
       - condition: state
         entity_id: binary_sensor.is_holiday_today
         state: "off"
+      - condition: state
+        entity_id: binary_sensor.is_non_working_day_today
+        state: "off"
     action:
       - service: media_player.play_media
         # ...
@@ -82,17 +80,38 @@ type: markdown
 content: >
   {% if is_state('binary_sensor.is_holiday_today', 'on') %}
     Today is a holiday: {{ states('sensor.today_s_holiday') }}
+  {% elif is_state('binary_sensor.is_non_working_day_today', 'on') %}
+    Today is a bridge day: {{ states('sensor.today_s_holiday') }}
   {% else %}
-    Today is not a holiday
+    Today is a regular day
   {% endif %}
 ```
 
 ## Data Source
 
-Data is retrieved from the official Argentine government website:
-https://www.argentina.gob.ar/jefatura/feriados-nacionales-{year}
+Data is retrieved from the ArgentinaDatos API:
+https://api.argentinadatos.com/v1/feriados/{year}
 
-The integration queries this page automatically and updates the data at the beginning of each month.
+The integration fetches data once per year and updates every 12 hours to check for changes.
+
+## Holiday Types
+
+| API Type | Sensor | Description |
+|----------|--------|-------------|
+| `inamovible` | Is Holiday Today | Fixed holiday (cannot be moved) |
+| `trasladable` | Is Holiday Today | Movable holiday (can be shifted to Monday) |
+| `puente` | Is Non-Working Day Today | Bridge day (tourist non-working day) |
+
+## Changelog
+
+### 2.0.0
+- Changed data source from web scraping to ArgentinaDatos API
+- Removed religious non-working days options (not available in API)
+- Simplified configuration (no options required)
+- Improved reliability and performance
+
+### 1.0.1
+- Initial release with web scraping from argentina.gob.ar
 
 ## License
 
