@@ -17,11 +17,12 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
+    """Set up binary sensor entities."""
     coordinator: ArgentinaHolidaysCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
         [
-            EsFeriadoBinarySensor(coordinator),
-            EsDiaNoLaborableBinarySensor(coordinator),
+            IsHolidayTodayBinarySensor(coordinator),
+            IsNonWorkingDayTodayBinarySensor(coordinator),
         ]
     )
 
@@ -30,73 +31,78 @@ class _BaseArgentinaBinarySensor(CoordinatorEntity, BinarySensorEntity):
     """Base class with shared device info."""
 
     def __init__(self, coordinator: ArgentinaHolidaysCoordinator) -> None:
+        """Initialize the binary sensor."""
         super().__init__(coordinator)
 
     @property
     def device_info(self):
+        """Return device info."""
         return {
             "identifiers": {(DOMAIN, "feriados_argentina")},
             "name": "Holiday Days Argentina",
-            "manufacturer": "Argentina.gob.ar",
+            "manufacturer": "ArgentinaDatos API",
             "model": "National Holidays",
         }
 
 
-class EsFeriadoBinarySensor(_BaseArgentinaBinarySensor):
-    """True when today is an official national holiday (feriado)."""
+class IsHolidayTodayBinarySensor(_BaseArgentinaBinarySensor):
+    """Binary sensor that is on when today is an official holiday."""
 
     _attr_name = "Is Holiday Today"
-    _attr_unique_id = "feriados_argentina_es_feriado"
+    _attr_unique_id = "feriados_argentina_is_holiday"
     _attr_icon = "mdi:calendar-star"
 
     @property
     def is_on(self) -> bool:
-        return bool(self.coordinator.data.get("today_feriados"))
+        """Return true if today is an official holiday."""
+        return bool(self.coordinator.data.get("today_holidays"))
 
     @property
     def extra_state_attributes(self) -> dict:
-        feriados = self.coordinator.data.get("today_feriados", [])
+        """Return extra state attributes."""
+        holidays = self.coordinator.data.get("today_holidays", [])
         today = self.coordinator.data.get("today")
         attrs: dict = {
             "year": today.year if today else None,
             "date": today.isoformat() if today else None,
         }
-        if feriados:
-            attrs["name"] = ", ".join(_unique([h["name"] for h in feriados]))
-            attrs["type"] = ", ".join(_unique([h["type"] for h in feriados]))
-            attrs["holidays"] = feriados
+        if holidays:
+            attrs["name"] = ", ".join(_unique([h["name"] for h in holidays]))
+            attrs["type"] = ", ".join(_unique([h["type"] for h in holidays]))
+            attrs["holidays"] = holidays
         return attrs
 
 
-class EsDiaNoLaborableBinarySensor(_BaseArgentinaBinarySensor):
-    """True when today is a non-working day (día no laborable) per user's config."""
+class IsNonWorkingDayTodayBinarySensor(_BaseArgentinaBinarySensor):
+    """Binary sensor that is on when today is a non-working day (bridge day)."""
 
     _attr_name = "Is Non-Working Day Today"
-    _attr_unique_id = "feriados_argentina_es_no_laborable"
+    _attr_unique_id = "feriados_argentina_is_non_working_day"
     _attr_icon = "mdi:calendar-remove"
 
     @property
     def is_on(self) -> bool:
-        return bool(self.coordinator.data.get("today_no_laborables"))
+        """Return true if today is a non-working day."""
+        return bool(self.coordinator.data.get("today_non_working_days"))
 
     @property
     def extra_state_attributes(self) -> dict:
-        no_labs = self.coordinator.data.get("today_no_laborables", [])
+        """Return extra state attributes."""
+        non_working = self.coordinator.data.get("today_non_working_days", [])
         today = self.coordinator.data.get("today")
         attrs: dict = {
             "year": today.year if today else None,
             "date": today.isoformat() if today else None,
-            "includes_jewish_days": self.coordinator.include_jewish,
-            "includes_islamic_days": self.coordinator.include_islamic,
         }
-        if no_labs:
-            attrs["name"] = ", ".join(_unique([h["name"] for h in no_labs]))
-            attrs["category"] = ", ".join(_unique([h["category"] for h in no_labs]))
-            attrs["non_working_days"] = no_labs
+        if non_working:
+            attrs["name"] = ", ".join(_unique([h["name"] for h in non_working]))
+            attrs["type"] = ", ".join(_unique([h["type"] for h in non_working]))
+            attrs["non_working_days"] = non_working
         return attrs
 
 
 def _unique(lst: list[str]) -> list[str]:
+    """Return unique items preserving order."""
     seen: set = set()
     result = []
     for item in lst:

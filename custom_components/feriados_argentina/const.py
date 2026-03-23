@@ -1,23 +1,12 @@
 """Constants for Feriados Argentina integration."""
 
 DOMAIN = "feriados_argentina"
-BASE_URL = "https://www.argentina.gob.ar/jefatura/feriados-nacionales-{year}"
 
-# Config entry keys
-CONF_INCLUDE_JEWISH = "include_jewish"
-CONF_INCLUDE_ISLAMIC = "include_islamic"
+# API endpoint for Argentina holidays
+API_URL = "https://api.argentinadatos.com/v1/feriados/{year}"
 
-# Holiday type classification
-# (a) = Armenio/tolerancia, (b) = Judío, (c) = Islámico
-ISLAMIC_MARKER = "(c)"
-JEWISH_MARKER = "(b)"
+# API types that are official holidays (feriados inamovibles/trasladables)
+HOLIDAY_API_TYPES = {"inamovible", "trasladable"}
 
-# Types that count as official holidays (feriados)
-FERIADO_TYPES = {
-    "Feriado inamovible",
-    "Feriado trasladable",
-    "Feriado turístico",
-}
-
-# Types that are non-working days (días no laborables) for specific communities
-DIA_NO_LABORABLE_TYPE = "Día no laborable"
+# API types that are non-working days (puentes turisticos)
+NON_WORKING_DAY_API_TYPES = {"puente"}
