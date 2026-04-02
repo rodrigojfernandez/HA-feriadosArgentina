@@ -16,6 +16,9 @@ _LOGGER = logging.getLogger(__name__)
 # Check for updates every 12 hours
 SCAN_INTERVAL = timedelta(hours=12)
 
+# Retry interval when fetch fails
+RETRY_INTERVAL = timedelta(minutes=30)
+
 
 def _parse_holidays_from_api(data: list[dict]) -> dict[tuple[int, int], list[dict]]:
     """Parse holidays from ArgentinaDatos API response.
@@ -90,6 +93,7 @@ class ArgentinaHolidaysCoordinator(DataUpdateCoordinator):
         )
         self._holidays: dict = {}
         self._fetched_year: int = 0
+        self._fetch_failed: bool = False
 
     async def _async_update_data(self) -> dict:
         """Fetch holidays from the API if needed.
@@ -100,8 +104,8 @@ class ArgentinaHolidaysCoordinator(DataUpdateCoordinator):
         today = date.today()
         year = today.year
 
-        # Fetch if we don't have data or year changed
-        needs_fetch = not self._holidays or self._fetched_year != year
+        # Fetch if we don't have data, year changed, or last fetch failed
+        needs_fetch = not self._holidays or self._fetched_year != year or self._fetch_failed
 
         if needs_fetch:
             url = API_URL.format(year=year)
@@ -115,12 +119,31 @@ class ArgentinaHolidaysCoordinator(DataUpdateCoordinator):
                         raise UpdateFailed(f"HTTP {resp.status} while fetching holidays from {url}")
                     data = await resp.json()
             except aiohttp.ClientError as err:
+                self._fetch_failed = True
+                self.update_interval = RETRY_INTERVAL
+                _LOGGER.warning(
+                    "Failed to fetch holidays for %d, will retry in %s: %s",
+                    year,
+                    RETRY_INTERVAL,
+                    err,
+                )
                 raise UpdateFailed(f"Network error while fetching holidays: {err}") from err
+            except UpdateFailed:
+                self._fetch_failed = True
+                self.update_interval = RETRY_INTERVAL
+                _LOGGER.warning(
+                    "Failed to fetch holidays for %d, will retry in %s",
+                    year,
+                    RETRY_INTERVAL,
+                )
+                raise
 
             self._holidays = _parse_holidays_from_api(data)
             self._fetched_year = year
-            _LOGGER.debug(
-                "Loaded %d holiday dates for %d",
+            self._fetch_failed = False
+            self.update_interval = SCAN_INTERVAL
+            _LOGGER.info(
+                "Successfully loaded %d holiday dates for %d",
                 len(self._holidays),
                 year,
             )
