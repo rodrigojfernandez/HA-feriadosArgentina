@@ -7,6 +7,7 @@ from datetime import date, timedelta
 
 import aiohttp
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.event import async_track_time_change
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import API_URL, DOMAIN, HOLIDAY_API_TYPES, NON_WORKING_DAY_API_TYPES
@@ -94,6 +95,45 @@ class ArgentinaHolidaysCoordinator(DataUpdateCoordinator):
         self._holidays: dict = {}
         self._fetched_year: int = 0
         self._fetch_failed: bool = False
+        # Refresh just after local midnight so today's holiday status flips
+        # without waiting for the 12h poll interval.
+        self._unsub_midnight = async_track_time_change(
+            hass,
+            self._handle_midnight,
+            hour=0,
+            minute=0,
+            second=1,
+        )
+        # Force a real API fetch every Monday at 03:00 local time.
+        self._unsub_weekly = async_track_time_change(
+            hass,
+            self._handle_weekly_fetch,
+            hour=3,
+            minute=0,
+            second=0,
+        )
+
+    async def _handle_midnight(self, _now) -> None:
+        """Force a refresh just after midnight to update today's status."""
+        await self.async_request_refresh()
+
+    async def _handle_weekly_fetch(self, now) -> None:
+        """Force a real API fetch on Mondays."""
+        # weekday(): Monday=0
+        if now.weekday() != 0:
+            return
+        self._fetch_failed = True
+        await self.async_request_refresh()
+
+    async def async_shutdown(self) -> None:
+        """Cancel scheduled callbacks on shutdown."""
+        if self._unsub_midnight is not None:
+            self._unsub_midnight()
+            self._unsub_midnight = None
+        if self._unsub_weekly is not None:
+            self._unsub_weekly()
+            self._unsub_weekly = None
+        await super().async_shutdown()
 
     async def _async_update_data(self) -> dict:
         """Fetch holidays from the API if needed.
